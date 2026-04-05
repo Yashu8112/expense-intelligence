@@ -50,7 +50,7 @@ public class ReportService {
             // Summary
             BigDecimal total = expenses.stream().map(Expense::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
             Table sumTbl = new Table(UnitValue.createPercentArray(new float[]{50,50})).useAllAvailableWidth();
-            addSumCard(sumTbl,"Total Expenses","$"+String.format("%.2f",total));
+            addSumCard(sumTbl,"Total Expenses","₹"+String.format("%.2f",total));
             addSumCard(sumTbl,"Transactions",String.valueOf(expenses.size()));
             doc.add(sumTbl); doc.add(new Paragraph("\n"));
             // Data table
@@ -64,7 +64,7 @@ public class ReportService {
                 String cat = e.getCategory()!=null?e.getCategory().getName():e.getAiCategory()!=null?e.getAiCategory()+" (AI)":"—";
                 addTd(tbl,e.getTitle(),bg); addTd(tbl,e.getExpenseDate().format(FMT),bg); addTd(tbl,cat,bg);
                 addTd(tbl,e.getPaymentMethod()!=null?e.getPaymentMethod().name():"—",bg);
-                tbl.addCell(new Cell().add(new Paragraph("$"+String.format("%.2f",e.getAmount())).setBold().setFontColor(DARK))
+                tbl.addCell(new Cell().add(new Paragraph("₹"+String.format("%.2f",e.getAmount())).setBold().setFontColor(DARK))
                     .setBackgroundColor(bg).setPadding(8).setBorder(null).setTextAlignment(TextAlignment.RIGHT));
                 alt=!alt;
             }
@@ -129,7 +129,7 @@ public class ReportService {
         CellStyle s=wb.createCellStyle(); XSSFFont f=wb.createFont(); f.setBold(true); f.setFontHeightInPoints((short)13); s.setFont(f); return s;
     }
     private CellStyle currencyStyle(XSSFWorkbook wb) {
-        CellStyle s=wb.createCellStyle(); s.setDataFormat(wb.createDataFormat().getFormat("$#,##0.00")); s.setAlignment(HorizontalAlignment.RIGHT); return s;
+        CellStyle s=wb.createCellStyle(); s.setDataFormat(wb.createDataFormat().getFormat("₹#,##0.00")); s.setAlignment(HorizontalAlignment.RIGHT); return s;
     }
     private CellStyle altRowStyle(XSSFWorkbook wb) {
         CellStyle s=wb.createCellStyle(); s.setFillForegroundColor(new XSSFColor(new byte[]{(byte)248,(byte)250,(byte)252},null)); s.setFillPattern(FillPatternType.SOLID_FOREGROUND); return s;
@@ -138,7 +138,7 @@ public class ReportService {
         CellStyle s=wb.createCellStyle(); XSSFFont f=wb.createFont(); f.setBold(true); s.setFont(f); s.setAlignment(HorizontalAlignment.RIGHT); return s;
     }
     private CellStyle totalCurrStyle(XSSFWorkbook wb) {
-        CellStyle s=wb.createCellStyle(); XSSFFont f=wb.createFont(); f.setBold(true); s.setFont(f); s.setDataFormat(wb.createDataFormat().getFormat("$#,##0.00")); s.setAlignment(HorizontalAlignment.RIGHT); return s;
+        CellStyle s=wb.createCellStyle(); XSSFFont f=wb.createFont(); f.setBold(true); s.setFont(f); s.setDataFormat(wb.createDataFormat().getFormat("₹#,##0.00")); s.setAlignment(HorizontalAlignment.RIGHT); return s;
     }
     private void setCell(Row r, int col, String val, CellStyle style) {
         org.apache.poi.ss.usermodel.Cell c=r.createCell(col); c.setCellValue(val); c.setCellStyle(style);
