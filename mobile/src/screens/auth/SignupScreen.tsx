@@ -25,6 +25,75 @@ import { AuthStackParams } from '../../navigation/AppNavigator';
 
 type NavProp = NativeStackNavigationProp<AuthStackParams, 'Signup'>;
 
+// Must live at module level: defining it inside the screen gives it a new
+// component type on every render, which remounts the TextInput and dismisses
+// the keyboard after each keystroke.
+function Field({
+  label,
+  icon,
+  value,
+  onChangeText,
+  placeholder,
+  secure,
+  keyboard,
+  error,
+  autoComplete,
+  showPassword,
+  onTogglePassword,
+}: {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  secure?: boolean;
+  keyboard?: string;
+  error?: string;
+  autoComplete?: string;
+  showPassword?: boolean;
+  onTogglePassword?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.fieldWrapper}>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+      <View
+        style={[
+          styles.inputRow,
+          {
+            backgroundColor: colors.input,
+            borderColor: error ? COLORS.danger : colors.inputBorder,
+          },
+        ]}
+      >
+        <Ionicons name={icon} size={18} color={colors.textMuted} style={styles.inputIcon} />
+        <TextInput
+          style={[styles.input, { color: colors.text }]}
+          placeholder={placeholder}
+          placeholderTextColor={colors.placeholder}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secure && !showPassword}
+          keyboardType={keyboard as never}
+          autoCapitalize={keyboard === 'email-address' ? 'none' : 'words'}
+          autoComplete={autoComplete as never}
+          returnKeyType="next"
+        />
+        {secure && onTogglePassword && (
+          <TouchableOpacity onPress={onTogglePassword} hitSlop={8}>
+            <Ionicons
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={18}
+              color={colors.textMuted}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+  );
+}
+
 export default function SignupScreen() {
   const navigation = useNavigation<NavProp>();
   const { signup } = useAuth();
@@ -66,68 +135,6 @@ export default function SignupScreen() {
       setLoading(false);
     }
   };
-
-  const Field = ({
-    label,
-    icon,
-    value,
-    onChange,
-    placeholder,
-    secure,
-    keyboard,
-    field,
-    autoComplete,
-  }: {
-    label: string;
-    icon: keyof typeof Ionicons.glyphMap;
-    value: string;
-    onChange: (v: string) => void;
-    placeholder: string;
-    secure?: boolean;
-    keyboard?: any;
-    field: string;
-    autoComplete?: any;
-  }) => (
-    <View style={styles.fieldWrapper}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
-      <View
-        style={[
-          styles.inputRow,
-          {
-            backgroundColor: colors.input,
-            borderColor: errors[field] ? COLORS.danger : colors.inputBorder,
-          },
-        ]}
-      >
-        <Ionicons name={icon} size={18} color={colors.textMuted} style={styles.inputIcon} />
-        <TextInput
-          style={[styles.input, { color: colors.text }]}
-          placeholder={placeholder}
-          placeholderTextColor={colors.placeholder}
-          value={value}
-          onChangeText={(t) => {
-            onChange(t);
-            setErrors((e) => ({ ...e, [field]: '' }));
-          }}
-          secureTextEntry={secure && !showPassword}
-          keyboardType={keyboard}
-          autoCapitalize={keyboard === 'email-address' ? 'none' : 'words'}
-          autoComplete={autoComplete}
-          returnKeyType="next"
-        />
-        {secure && (
-          <TouchableOpacity onPress={() => setShowPassword((s) => !s)} hitSlop={8}>
-            <Ionicons
-              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={18}
-              color={colors.textMuted}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-      {errors[field] ? <Text style={styles.errorText}>{errors[field]}</Text> : null}
-    </View>
-  );
 
   return (
     <View style={{ flex: 1 }}>
@@ -174,39 +181,43 @@ export default function SignupScreen() {
               label="Full Name"
               icon="person-outline"
               value={name}
-              onChange={setName}
+              onChangeText={(t) => { setName(t); setErrors((e) => ({ ...e, name: '' })); }}
               placeholder="John Doe"
-              field="name"
+              error={errors.name}
               autoComplete="name"
             />
             <Field
               label="Email"
               icon="mail-outline"
               value={email}
-              onChange={setEmail}
+              onChangeText={(t) => { setEmail(t); setErrors((e) => ({ ...e, email: '' })); }}
               placeholder="you@example.com"
               keyboard="email-address"
-              field="email"
+              error={errors.email}
               autoComplete="email"
             />
             <Field
               label="Password"
               icon="lock-closed-outline"
               value={password}
-              onChange={setPassword}
+              onChangeText={(t) => { setPassword(t); setErrors((e) => ({ ...e, password: '' })); }}
               placeholder="Min. 8 characters"
               secure
-              field="password"
+              error={errors.password}
               autoComplete="new-password"
+              showPassword={showPassword}
+              onTogglePassword={() => setShowPassword((s) => !s)}
             />
             <Field
               label="Confirm Password"
               icon="shield-checkmark-outline"
               value={confirmPassword}
-              onChange={setConfirmPassword}
+              onChangeText={(t) => { setConfirmPassword(t); setErrors((e) => ({ ...e, confirmPassword: '' })); }}
               placeholder="Repeat password"
               secure
-              field="confirmPassword"
+              error={errors.confirmPassword}
+              showPassword={showPassword}
+              onTogglePassword={() => setShowPassword((s) => !s)}
             />
 
             <TouchableOpacity

@@ -44,6 +44,46 @@ const PAYMENT_COLORS: Record<string, string> = {
   OTHER: COLORS.danger,
 };
 
+// Must live at module level: defining it inside the screen gives it a new
+// component type on every render, which remounts the wrapped TextInput and
+// dismisses the keyboard after each keystroke.
+function Field({
+  label,
+  icon,
+  prefix,
+  children,
+  error,
+}: {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  prefix?: string;
+  children: React.ReactNode;
+  error?: string;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.fieldWrapper}>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+      <View
+        style={[
+          styles.inputRow,
+          {
+            backgroundColor: colors.input,
+            borderColor: error ? COLORS.danger : colors.inputBorder,
+          },
+        ]}
+      >
+        <Ionicons name={icon} size={18} color={colors.textMuted} />
+        {prefix ? (
+          <Text style={[styles.prefix, { color: colors.textSecondary }]}>{prefix}</Text>
+        ) : null}
+        {children}
+      </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+  );
+}
+
 export default function AddExpenseScreen() {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
@@ -152,41 +192,6 @@ export default function AddExpenseScreen() {
   if (loading) return <LoadingSpinner fullScreen text="Loading…" />;
 
   const selectedCategoryName = categories.find((c) => c.id === categoryId)?.name ?? 'Select Category';
-
-  // ── UI helpers ─────────────────────────────────────────────────────────────
-  const Field = ({
-    label,
-    icon,
-    prefix,
-    children,
-    error,
-  }: {
-    label: string;
-    icon: keyof typeof Ionicons.glyphMap;
-    prefix?: string;
-    children: React.ReactNode;
-    error?: string;
-  }) => (
-    <View style={styles.fieldWrapper}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
-      <View
-        style={[
-          styles.inputRow,
-          {
-            backgroundColor: colors.input,
-            borderColor: error ? COLORS.danger : colors.inputBorder,
-          },
-        ]}
-      >
-        <Ionicons name={icon} size={18} color={colors.textMuted} />
-        {prefix ? (
-          <Text style={[styles.prefix, { color: colors.textSecondary }]}>{prefix}</Text>
-        ) : null}
-        {children}
-      </View>
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
-  );
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
