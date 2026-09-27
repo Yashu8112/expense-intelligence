@@ -5,12 +5,17 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.expenseintelligence.app"
     },
     "android": {
-      "package": "com.expenseintelligence.app"
+      "package": "com.expenseintelligence.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2563EB"
+      }
     },
     "plugins": [
       "expo-secure-store",

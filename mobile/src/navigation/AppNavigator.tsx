@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -35,6 +36,7 @@ export type ExpenseStackParams = {
 export type TabParams = {
   Dashboard: undefined;
   ExpensesTab: undefined;
+  AddExpenseTab: undefined;
   Reports: undefined;
   Chatbot: undefined;
 };
@@ -70,8 +72,16 @@ function ExpensesStackNavigator() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main bottom-tab navigator
 // ─────────────────────────────────────────────────────────────────────────────
+// The Add tab renders nothing — its press is intercepted to push AddExpense.
+function AddExpensePlaceholder() {
+  return null;
+}
+
 function MainTabNavigator({ navigation }: any) {
   const { colors, isDark } = useTheme();
+  // Keeps tab content above the Android gesture bar / iPhone home indicator
+  // instead of sinking to the very bottom of the screen.
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -81,9 +91,9 @@ function MainTabNavigator({ navigation }: any) {
           backgroundColor: colors.tabBar,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-          paddingTop: 8,
+          height: 58 + insets.bottom,
+          paddingTop: 6,
+          paddingBottom: insets.bottom + 4,
           elevation: 8,
           shadowColor: '#000',
           shadowOpacity: 0.1,
@@ -111,40 +121,30 @@ function MainTabNavigator({ navigation }: any) {
       <Tab.Screen
         name="ExpensesTab"
         component={ExpensesStackNavigator}
+        options={{ tabBarLabel: 'Expenses' }}
+      />
+      <Tab.Screen
+        name="AddExpenseTab"
+        component={AddExpensePlaceholder}
         options={{
-          tabBarLabel: 'Expenses',
-          tabBarButton: (props) => (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <TouchableOpacity
-                {...(props as any)}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  (props as any).onPress?.();
-                }}
-                style={{ alignItems: 'center' }}
-              />
-              {/* FAB for adding expense */}
-              <TouchableOpacity
-                style={styles.fab}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  navigation.navigate('ExpensesTab', {
-                    screen: 'AddExpense',
-                  });
-                }}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={[COLORS.primary, COLORS.secondary]}
-                  style={styles.fabGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Ionicons name="add" size={28} color="#fff" />
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+          tabBarLabel: () => null,
+          tabBarIcon: () => (
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={styles.addButton}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Ionicons name="add" size={26} color="#fff" />
+            </LinearGradient>
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            navigation.navigate('ExpensesTab', { screen: 'AddExpense' });
+          },
         }}
       />
       <Tab.Screen
@@ -219,22 +219,17 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 20 : 12,
-    alignSelf: 'center',
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-    zIndex: 100,
-  },
-  fabGradient: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  // Sized to stay fully inside the 58pt tab bar content area — no overflow.
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
   },
 });
