@@ -14,6 +14,6 @@ jobs:
       - name: Ping health endpoint
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 \
-            https://expense-backend-z1dp.onrender.com/actuator/health)
+            https://expense-backend-z1dp.onrender.com/api/actuator/health)
           echo "health check returned HTTP $STATUS"
           # 200 = healthy; anything else still wakes the service, so don't fail the job
