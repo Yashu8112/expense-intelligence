@@ -1,11 +1,11 @@
-# Keeps the Render free-tier backend from spinning down after 15 minutes
-# of inactivity by pinging the public health endpoint every 10 minutes.
-name: Keep backend awake
+# The primary keep-alive is the in-app self-ping (backend KeepAliveConfig),
+# which runs on the app's own clock and is unaffected by GitHub Actions cron
+# delays. This workflow is a manual on-demand waker: run it from the Actions
+# tab if you ever need to cold-start the backend.
+name: Wake backend
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # allows manual runs from the Actions tab
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Ping health endpoint
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 \
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 300 \
             https://expense-backend-z1dp.onrender.com/api/actuator/health)
           echo "health check returned HTTP $STATUS"
-          # 200 = healthy; anything else still wakes the service, so don't fail the job

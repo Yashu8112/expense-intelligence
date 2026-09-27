@@ -53,6 +53,12 @@ jwt:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
 
+# Keep-alive self-ping (prevents Render free tier 15-min spin-down)
+app:
+  keep-alive:
+    url: ${KEEP_ALIVE_URL:https://expense-backend-z1dp.onrender.com/api/actuator/health}
+    enabled: ${KEEP_ALIVE_ENABLED:true}
+
 # Logging
 logging:
   level:
