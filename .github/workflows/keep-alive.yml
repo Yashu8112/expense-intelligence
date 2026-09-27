@@ -1,0 +1,19 @@
+# Keeps the Render free-tier backend from spinning down after 15 minutes
+# of inactivity by pinging the public health endpoint every 10 minutes.
+name: Keep backend awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # allows manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 \
+            https://expense-backend-z1dp.onrender.com/actuator/health)
+          echo "health check returned HTTP $STATUS"
+          # 200 = healthy; anything else still wakes the service, so don't fail the job
