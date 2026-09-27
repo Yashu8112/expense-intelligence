@@ -19,7 +19,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
            "AND (:categoryId IS NULL OR e.category.id = :categoryId) " +
            "AND (:startDate IS NULL OR e.expenseDate >= :startDate) " +
            "AND (:endDate IS NULL OR e.expenseDate <= :endDate) " +
-           "ORDER BY e.expenseDate DESC")
+           "ORDER BY e.expenseDate DESC, e.createdAt DESC")
     Page<Expense> findWithFilters(@Param("userId") UUID userId, @Param("search") String search, @Param("categoryId") Integer categoryId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, Pageable pageable);
     @Query("SELECT e FROM Expense e WHERE e.user.id = :userId AND e.expenseDate BETWEEN :startDate AND :endDate ORDER BY e.expenseDate DESC")
     List<Expense> findByUserIdAndDateRange(@Param("userId") UUID userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);

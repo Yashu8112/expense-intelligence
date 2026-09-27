@@ -89,7 +89,7 @@ export default function DashboardPage() {
           <button onClick={() => setChatOpen(true)} className="btn btn-secondary btn-md">
             <MessageSquare size={16} />FinBot
           </button>
-          <Link to="/expenses" className="btn btn-primary btn-md">+ Add Expense</Link>
+          <Link to="/expenses" state={{ openAdd: true }} className="btn btn-primary btn-md">+ Add Expense</Link>
         </div>
       </div>
 

@@ -180,7 +180,7 @@ export default function AddExpenseScreen() {
         await expenseAPI.create(payload as any);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      navigation.goBack();
+      navigation.navigate('ExpensesList');
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Error', err.message ?? 'Failed to save expense');
@@ -202,7 +202,16 @@ export default function AddExpenseScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
+        <TouchableOpacity
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('ExpensesList');
+            }
+          }}
+          hitSlop={8}
+        >
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEditing ? 'Edit Expense' : 'New Expense'}</Text>

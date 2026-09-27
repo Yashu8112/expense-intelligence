@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { expenseAPI } from '../services/api'
 import { Plus, Search, Trash2, Edit3, ChevronLeft, ChevronRight, SlidersHorizontal, X, Loader2, IndianRupee } from 'lucide-react'
 import { format } from 'date-fns'
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast'
 const PAYMENT_LABELS = { CASH:'Cash', CARD:'Card', UPI:'UPI', BANK_TRANSFER:'Bank', OTHER:'Other' }
 
 export default function ExpensesPage() {
+  const location = useLocation()
   const [expenses, setExpenses]   = useState([])
   const [categories, setCategories] = useState([])
   const [pag, setPag]             = useState({ page:0, size:15, total:0, totalPages:0 })
@@ -17,6 +19,14 @@ export default function ExpensesPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [deleting, setDeleting]   = useState(null)
   const [filters, setFilters]     = useState({ search:'', categoryId:'', startDate:'', endDate:'', page:0, size:15 })
+
+  useEffect(() => {
+    if (location.state?.openAdd) {
+      setEditTarget(null)
+      setShowForm(true)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true)
@@ -41,11 +51,26 @@ export default function ExpensesPage() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this expense?')) return
     setDeleting(id)
-    try { await expenseAPI.delete(id); toast.success('Expense deleted'); fetchExpenses() }
+    try {
+      await expenseAPI.delete(id);
+      toast.success('Expense deleted');
+      setExpenses(prev => prev.filter(e => e.id !== id));
+      setPag(p => ({ ...p, total: Math.max(0, p.total - 1) }));
+      fetchExpenses();
+    }
     catch(e) { console.error(e) }
     finally { setDeleting(null) }
   }
-  const handleFormSuccess = () => { setShowForm(false); setEditTarget(null); fetchExpenses() }
+
+  const handleFormSuccess = (savedExpense) => {
+    setShowForm(false);
+    setEditTarget(null);
+    if (savedExpense && !editTarget) {
+      setExpenses(prev => [savedExpense, ...prev.filter(e => e.id !== savedExpense.id)]);
+      setPag(p => ({ ...p, total: p.total + 1 }));
+    }
+    fetchExpenses();
+  }
   const handleEdit = (e) => { setEditTarget(e); setShowForm(true) }
   const resetFilters = () => setFilters({ search:'', categoryId:'', startDate:'', endDate:'', page:0, size:15 })
   const hasActive = filters.search || filters.categoryId || filters.startDate || filters.endDate

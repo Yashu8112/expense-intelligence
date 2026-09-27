@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -91,11 +91,12 @@ export default function ExpensesScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchExpenses(true);
-    fetchCategories();
-  }, [selectedCategory]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchExpenses(true);
+      fetchCategories();
+    }, [selectedCategory, fetchExpenses, fetchCategories])
+  );
 
   // Debounced search
   const handleSearch = (text: string) => {

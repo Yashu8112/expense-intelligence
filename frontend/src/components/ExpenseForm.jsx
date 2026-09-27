@@ -37,10 +37,15 @@ export default function ExpenseForm({ expense, categories, onSuccess, onClose })
     if (!validate()) return
     setLoading(true)
     try {
-      const payload = { ...form, amount:parseFloat(form.amount), categoryId:form.categoryId?parseInt(form.categoryId):null }
-      if (isEdit) { await expenseAPI.update(expense.id, payload); toast.success('Expense updated!') }
-      else        { await expenseAPI.create(payload);              toast.success('Expense added! AI is categorizing it...') }
-      onSuccess()
+      let res;
+      if (isEdit) {
+        res = await expenseAPI.update(expense.id, payload);
+        toast.success('Expense updated!');
+      } else {
+        res = await expenseAPI.create(payload);
+        toast.success('Expense added! AI is categorizing it...');
+      }
+      onSuccess(res?.data?.data);
     } catch(e) { toast.error(e.response?.data?.error || 'Failed to save expense') }
     finally { setLoading(false) }
   }

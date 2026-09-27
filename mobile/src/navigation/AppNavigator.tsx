@@ -122,6 +122,11 @@ function MainTabNavigator({ navigation }: any) {
         name="ExpensesTab"
         component={ExpensesStackNavigator}
         options={{ tabBarLabel: 'Expenses' }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate('ExpensesTab', { screen: 'ExpensesList' });
+          },
+        })}
       />
       <Tab.Screen
         name="AddExpenseTab"
