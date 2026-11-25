@@ -36,6 +36,10 @@ export default function ExpenseForm({ expense, categories, onSuccess, onClose })
     ev.preventDefault()
     if (!validate()) return
     setLoading(true)
+    const payload = {
+      ...form,
+      categoryId: form.categoryId ? Number(form.categoryId) : null,
+    }
     try {
       let res;
       if (isEdit) {
